@@ -254,10 +254,11 @@ def getDataSets(binary=False, bins=False, scaled=False, strings=False, \
     new_col_list.extend(columns_list)
     df = df.reindex(columns=new_col_list)
     
-    print "Starting with", df.columns.size, "manually generated features...\n", df.columns.values
+    print ("Starting with", df.columns.size, "manually generated features...\n", df.columns.values)
+
     numerics = df.loc[:, ['Age_scaled', 'Fare_scaled', 'Pclass_scaled', 'Parch_scaled', 'SibSp_scaled', 
                           'Names_scaled', 'CabinNumber_scaled', 'Age_bin_id_scaled', 'Fare_bin_id_scaled']]
-    print "\nFeatures used for automated feature generation:\n", numerics.head(10)
+    print ("\nFeatures used for automated feature generation:\n", numerics.head(10))
     
     new_fields_count = 0
     for i in range(0, numerics.columns.size-1):
@@ -277,7 +278,7 @@ def getDataSets(binary=False, bins=False, scaled=False, strings=False, \
                 df = pd.concat([df, pd.Series(numerics.iloc[:,i] - numerics.iloc[:,j], name=name)], axis=1)
                 new_fields_count += 2
       
-    print "\n", new_fields_count, "new features generated"
+    print ("\n", new_fields_count, "new features generated")
     df_corr = df.drop(['Survived', 'PassengerId'],axis=1).corr(method='spearman')
     
     mask = np.ones(df_corr.columns.size) - np.eye(df_corr.columns.size)
@@ -290,27 +291,27 @@ def getDataSets(binary=False, bins=False, scaled=False, strings=False, \
         corr = df_corr[abs(df_corr[col]) > 0.98].index
         drops = np.union1d(drops, corr)
     
-    print "\nDropping", drops.shape[0], "highly correlated features...\n" #, drops
+    print ("\nDropping", drops.shape[0], "highly correlated features...\n") #, drops
     df.drop(drops, axis=1, inplace=True)
     
     input_df = df[:input_df.shape[0]] 
     submit_df  = df[input_df.shape[0]:]
     
     if pca:
-        print "reducing and clustering now..."
+        print ("reducing and clustering now...")
         input_df, submit_df = reduceAndCluster(input_df, submit_df)
     else:
         submit_df.drop('Survived', axis=1, inplace=1)
     
-    print "\n", input_df.columns.size, "initial features generated...\n" #, input_df.columns.values
+    print ("\n", input_df.columns.size, "initial features generated...\n") #, input_df.columns.values
     
     if balanced:
-        print 'Perished data shape:', input_df[input_df.Survived==0].shape
-        print 'Survived data shape:', input_df[input_df.Survived==1].shape
+        print ('Perished data shape:', input_df[input_df.Survived==0].shape)
+        print ('Survived data shape:', input_df[input_df.Survived==1].shape)
         perished_sample = rd.sample(input_df[input_df.Survived==0].index, input_df[input_df.Survived==1].shape[0])
         input_df = pd.concat([input_df.ix[perished_sample], input_df[input_df.Survived==1]])
         input_df.sort(inplace=True)
-        print 'New even class training shape:', input_df.shape
+        print ('New even class training shape:', input_df.shape)
     
     return input_df, submit_df
 
@@ -323,11 +324,11 @@ def reduceAndCluster(input_df, submit_df, clusters=3):
     df = df.reindex_axis(input_df.columns, axis=1)
     survivedSeries = pd.Series(df['Survived'], name='Survived')
     
-    print df.head()
+    print (df.head())
     X = df.values[:, 1::]
     y = df.values[:, 0]
     
-    print X[0:5]
+    print (X[0:5])
     
     variance_pct = .99
     
@@ -340,21 +341,21 @@ def reduceAndCluster(input_df, submit_df, clusters=3):
     # Create a data frame from the PCA'd data
     pcaDataFrame = pd.DataFrame(X_transformed)
     
-    print pcaDataFrame.shape[1], " components describe ", str(variance_pct)[1:], "% of the variance"
+    print (pcaDataFrame.shape[1], " components describe ", str(variance_pct)[1:], "% of the variance")
     
     
     
     kmeans = KMeans(n_clusters=clusters, random_state=np.random.RandomState(4), init='random')
     trainClusterIds = kmeans.fit_predict(X_transformed[:input_df.shape[0]])
-    print "clusterIds shape for training data: ", trainClusterIds.shape
+    print ("clusterIds shape for training data: ", trainClusterIds.shape)
     #print "trainClusterIds: ", trainClusterIds
      
     testClusterIds = kmeans.predict(X_transformed[input_df.shape[0]:])
-    print "clusterIds shape for test data: ", testClusterIds.shape
+    print ("clusterIds shape for test data: ", testClusterIds.shape)
     #print "testClusterIds: ", testClusterIds
      
     clusterIds = np.concatenate([trainClusterIds, testClusterIds])
-    print "all clusterIds shape: ", clusterIds.shape
+    print ("all clusterIds shape: ", clusterIds.shape)
     #print "clusterIds: ", clusterIds
     
     
@@ -379,11 +380,11 @@ if __name__ == '__main__':
 
     train, test = reduceAndCluster(train, test)
     
-    print "Labeled survived counts :\n", pd.value_counts(train['Survived'])/train.shape[0]
-    print "Labeled cluster counts  :\n", pd.value_counts(train['ClusterId'])/train.shape[0]
-    print "Unlabeled cluster counts:\n", pd.value_counts(test['ClusterId'])/test.shape[0]
+    print ("Labeled survived counts :\n", pd.value_counts(train['Survived'])/train.shape[0])
+    print ("Labeled cluster counts  :\n", pd.value_counts(train['ClusterId'])/train.shape[0])
+    print ("Unlabeled cluster counts:\n", pd.value_counts(test['ClusterId'])/test.shape[0])
     
-    print train.columns.values
+    print (train.columns.values)
 
 
 
