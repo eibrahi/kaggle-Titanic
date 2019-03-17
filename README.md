@@ -5,3 +5,5 @@ numpy && scipy && matplotlib
 
 Titanic is a competition in Kaggle for knowledge. 
 For detail infomation: http://www.cnblogs.com/north-north/p/4360121.html
+
+Das ist meine Ändrung die ich dem Projekt zugefügt habe
